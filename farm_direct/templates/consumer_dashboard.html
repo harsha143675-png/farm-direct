@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Consumer Dashboard - FarmDirect{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="dashboard-title-row">
+            <div>
+                <span class="badge" style="background: #dbeafe; color: #1e40af; font-size: 0.85rem; margin-bottom: 0.5rem;">🛒 Registered Consumer</span>
+                <h1 style="font-size: 1.8rem; font-weight: 800;">Welcome, {{ consumer.name }}</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    📍 Your Delivery Area: <strong>{{ consumer.city_village }}, {{ consumer.district }} ({{ consumer.state }})</strong> | 📞 <strong>{{ consumer.phone }}</strong>
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('marketplace') }}" class="btn btn-primary">🔍 Browse Full Marketplace</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="dashboard-grid">
+        <!-- Sidebar: Post Crop Requirement -->
+        <div>
+            <div class="dashboard-card">
+                <h3>📢 Tell Farmers What You Need</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                    Can't find what you are looking for? Post your demand and suitable farmers will contact you directly!
+                </p>
+
+                <form method="POST" action="{{ url_for('add_demand_post') }}">
+                    <div class="form-group">
+                        <label for="demand_crop">Crop Name You Want *</label>
+                        <input type="text" id="demand_crop" name="crop_name" class="form-control" placeholder="e.g. Organic Mangoes, Turmeric, Potatoes" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="demand_category">Category *</label>
+                        <select id="demand_category" name="category" class="form-control" required>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Grains">Grains & Cereals</option>
+                            <option value="Pulses">Pulses & Legumes</option>
+                            <option value="Spices & Others">Spices & Others</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="demand_qty">Quantity *</label>
+                            <input type="number" step="0.5" id="demand_qty" name="quantity" class="form-control" placeholder="e.g. 10" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="demand_unit">Unit *</label>
+                            <select id="demand_unit" name="unit" class="form-control" required>
+                                <option value="kg">kg</option>
+                                <option value="quintal">quintal</option>
+                                <option value="dozen">dozen</option>
+                                <option value="crate">crate</option>
+                                <option value="piece">piece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="target_price">Expected / Target Price (₹)</label>
+                        <input type="number" step="1" id="target_price" name="target_price" class="form-control" placeholder="e.g. 40 (Optional)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="demand_loc">Delivery Location *</label>
+                        <input type="text" id="demand_loc" name="location" class="form-control" value="{{ consumer.city_village }}, {{ consumer.district }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Special Requirements / Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" placeholder="e.g. Looking for chemical-free, direct farm delivery for family or community."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-consumer btn-block" style="padding: 0.75rem;">
+                        📢 Post Requirement to Farmers
+                    </button>
+                </form>
+            </div>
+
+            <!-- My Demands List -->
+            <div class="dashboard-card">
+                <h3>📌 My Posted Requirements ({{ my_demands|length }})</h3>
+                {% if my_demands %}
+                    {% for d in my_demands %}
+                    <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                            <span>{{ d.crop_name }}</span>
+                            <span class="badge badge-available">Active</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            {{ d.quantity }} {{ d.unit }} {% if d.target_price %}@ ₹{{ d.target_price }}/{{ d.unit }}{% endif %}
+                        </div>
+                        {% if d.notes %}
+                        <div style="font-size: 0.8rem; color: #64748b; font-style: italic; margin-top: 0.25rem;">"{{ d.notes }}"</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">You haven't posted any crop requirements yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Main Content Area: Matching Crops & Inquiries -->
+        <div>
+            <!-- Matching Crops Near You -->
+            <div class="dashboard-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="margin-bottom: 0.2rem;">📍 Direct From Farmers Near {{ consumer.district or consumer.city_village }}</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Fresh harvest from local farmers in your region.</p>
+                    </div>
+                    <a href="{{ url_for('marketplace') }}" class="btn btn-sm btn-secondary">Explore All</a>
+                </div>
+
+                <div class="crops-grid" style="margin-bottom: 0;">
+                    {% for crop in local_crops[:4] %}
+                    <div class="crop-card">
+                        <div class="crop-card-header">
+                            <span class="crop-emoji">{{ crop.image_emoji }}</span>
+                            <span class="crop-category-badge">{{ crop.category }}</span>
+                        </div>
+                        <div class="crop-card-body">
+                            <h3 class="crop-card-title">{{ crop.crop_name }}</h3>
+                            <div class="crop-location">📍 {{ crop.location }}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                Farmer: <strong>{{ crop.farmer_name }}</strong>
+                            </div>
+                            <div class="crop-pricing">
+                                <div>
+                                    <div class="direct-price">₹{{ crop.price }} <span>/ {{ crop.unit }}</span></div>
+                                    {% if crop.estimated_market_price %}
+                                    <div class="market-price-strike">Market: ₹{{ crop.estimated_market_price }}</div>
+                                    {% endif %}
+                                </div>
+                                {% if crop.estimated_market_price and crop.estimated_market_price > crop.price %}
+                                <div class="savings-pill">Save ₹{{ (crop.estimated_market_price - crop.price)|round }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="crop-card-footer">
+                            <a href="{{ url_for('crop_detail', crop_id=crop.id) }}" class="btn btn-primary btn-sm btn-block">
+                                Direct Connect
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Inquiries I have sent to farmers -->
+            <div class="dashboard-card">
+                <h3>💬 My Direct Inquiries Sent to Farmers ({{ my_inquiries|length }})</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Farmers you have contacted. You can call or chat with them directly.
+                </p>
+
+                {% if my_inquiries %}
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Crop</th>
+                                <th>Farmer Name</th>
+                                <th>Farm Location</th>
+                                <th>Price</th>
+                                <th>Direct Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inq in my_inquiries %}
+                            <tr>
+                                <td><strong>{{ inq.crop_name }}</strong></td>
+                                <td><strong>{{ inq.farmer_name }}</strong></td>
+                                <td>{{ inq.crop_location }}</td>
+                                <td>₹{{ inq.price }} / {{ inq.unit }}</td>
+                                <td>
+                                    <div style="display: flex; gap: 0.4rem;">
+                                        <a href="tel:{{ inq.farmer_phone }}" class="btn btn-sm btn-secondary">📞 Call</a>
+                                        <a href="https://wa.me/91{{ inq.farmer_phone }}?text=Hello%20{{ inq.farmer_name }},%20following%20up%20on%20my%20inquiry%20for%20{{ inq.crop_name }}." 
+                                           target="_blank" class="btn btn-sm btn-whatsapp">💬 WhatsApp</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0;">
+                    You haven't contacted any farmers yet. Browse crops below and connect directly!
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- All Available Crops -->
+            <div class="dashboard-card">
+                <h3 style="margin-bottom: 1rem;">🌾 All Available Produce</h3>
+                <div class="crops-grid" style="margin-bottom: 0;">
+                    {% for crop in all_crops %}
+                    <div class="crop-card">
+                        <div class="crop-card-header">
+                            <span class="crop-emoji">{{ crop.image_emoji }}</span>
+                            <span class="crop-category-badge">{{ crop.category }}</span>
+                        </div>
+                        <div class="crop-card-body">
+                            <h3 class="crop-card-title">{{ crop.crop_name }}</h3>
+                            <div class="crop-location">📍 {{ crop.location }}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                Farmer: <strong>{{ crop.farmer_name }}</strong>
+                            </div>
+                            <div class="crop-pricing">
+                                <div>
+                                    <div class="direct-price">₹{{ crop.price }} <span>/ {{ crop.unit }}</span></div>
+                                </div>
+                                {% if crop.estimated_market_price and crop.estimated_market_price > crop.price %}
+                                <div class="savings-pill">Save ₹{{ (crop.estimated_market_price - crop.price)|round }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="crop-card-footer">
+                            <a href="{{ url_for('crop_detail', crop_id=crop.id) }}" class="btn btn-primary btn-sm btn-block">
+                                Direct Connect & Buy
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

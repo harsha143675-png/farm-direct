@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Dashboard - FarmDirect{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container">
+        <div class="dashboard-title-row">
+            <div>
+                <span class="badge badge-available" style="font-size: 0.85rem; margin-bottom: 0.5rem;">👨‍🌾 Verified Farmer</span>
+                <h1 style="font-size: 1.8rem; font-weight: 800;">Welcome, {{ farmer.name }}</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    📍 Farm Location: <strong>{{ farmer.city_village }}, {{ farmer.district }} ({{ farmer.state }})</strong> | 📞 Contact: <strong>{{ farmer.phone }}</strong>
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('marketplace') }}" class="btn btn-secondary">🔍 View Public Marketplace</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="dashboard-grid">
+        <!-- Sidebar: Add New Crop Form -->
+        <div>
+            <div class="dashboard-card">
+                <h3>🌾 List Crop For Direct Sale</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                    Post your harvest directly. No middlemen or broker deductions.
+                </p>
+
+                <form method="POST" action="{{ url_for('add_crop_post') }}">
+                    <div class="form-group">
+                        <label for="crop_name">Crop Name *</label>
+                        <input type="text" id="crop_name" name="crop_name" class="form-control" placeholder="e.g. Organic Tomatoes, Basmati Rice" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category *</label>
+                        <select id="category" name="category" class="form-control" required>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Grains">Grains & Cereals</option>
+                            <option value="Pulses">Pulses & Legumes</option>
+                            <option value="Spices & Others">Spices & Others</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Your Direct Price (₹) *</label>
+                            <input type="number" step="0.5" id="price" name="price" class="form-control" placeholder="e.g. 25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="unit">Per Unit *</label>
+                            <select id="unit" name="unit" class="form-control" required>
+                                <option value="kg">per kg</option>
+                                <option value="quintal">per quintal</option>
+                                <option value="crate">per crate</option>
+                                <option value="dozen">per dozen</option>
+                                <option value="piece">per piece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="quantity">Available Quantity *</label>
+                            <input type="number" step="1" id="quantity" name="quantity" class="form-control" placeholder="e.g. 500" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="harvest_date">Harvest / Available Date</label>
+                            <input type="date" id="harvest_date" name="harvest_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="market_price">Typical Retail Market Price (₹)</label>
+                        <input type="number" step="0.5" id="market_price" name="estimated_market_price" class="form-control" placeholder="e.g. 40 (shows customer savings)">
+                        <small style="color: var(--text-muted); font-size: 0.75rem;">Helps show consumers how much they save by buying directly from you!</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Crop Description & Quality</label>
+                        <textarea id="description" name="description" class="form-control" placeholder="e.g. Naturally grown, pesticide-free, freshly harvested this morning."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-farmer btn-block" style="padding: 0.75rem;">
+                        ➕ Publish Crop Listing
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content Area: My Crops & Inquiries -->
+        <div>
+            <!-- My Crops Listed -->
+            <div class="dashboard-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin-bottom: 0;">📋 Your Active Crop Listings ({{ crops|length }})</h3>
+                </div>
+
+                {% if crops %}
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Crop</th>
+                                <th>Category</th>
+                                <th>Your Price</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in crops %}
+                            <tr>
+                                <td>
+                                    <strong>{{ c.image_emoji }} {{ c.crop_name }}</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ c.location }}</div>
+                                </td>
+                                <td>{{ c.category }}</td>
+                                <td><strong>₹{{ c.price }}</strong> / {{ c.unit }}</td>
+                                <td>{{ c.quantity }} {{ c.unit }}</td>
+                                <td>
+                                    {% if c.status == 'available' %}
+                                        <span class="badge badge-available">Available</span>
+                                    {% else %}
+                                        <span class="badge badge-sold">Sold Out</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <form method="POST" action="{{ url_for('toggle_crop_status', crop_id=c.id) }}" style="display: inline;">
+                                            <input type="hidden" name="status" value="{% if c.status == 'available' %}sold_out{% else %}available{% endif %}">
+                                            <button type="submit" class="btn btn-sm btn-secondary" title="Toggle Available/Sold">
+                                                {% if c.status == 'available' %}Mark Sold{% else %}Make Active{% endif %}
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ url_for('delete_crop_route', crop_id=c.id) }}" onsubmit="return confirm('Are you sure you want to delete this listing?');" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-secondary" style="color: var(--danger);" title="Delete listing">
+                                                🗑️
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                    <p style="font-size: 2rem;">🌱</p>
+                    <p>You haven't listed any crops yet. Use the form on the left to list your first harvest!</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Direct Inquiries from Consumers -->
+            <div class="dashboard-card">
+                <h3>💬 Direct Inquiries Received From Consumers ({{ inquiries|length }})</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Consumers interested in buying your crops directly. Call or WhatsApp them directly to confirm orders!
+                </p>
+
+                {% if inquiries %}
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Crop</th>
+                                <th>Buyer Name</th>
+                                <th>Qty Requested</th>
+                                <th>Buyer Message</th>
+                                <th>Direct Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inq in inquiries %}
+                            <tr>
+                                <td><strong>{{ inq.crop_name }}</strong></td>
+                                <td>
+                                    <strong>{{ inq.consumer_name }}</strong>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">📍 {{ inq.consumer_location }}</div>
+                                </td>
+                                <td>{{ inq.quantity_needed }} {{ inq.unit }}</td>
+                                <td><span style="font-size: 0.85rem; color: #334155;">{{ inq.message }}</span></td>
+                                <td>
+                                    <div style="display: flex; gap: 0.4rem;">
+                                        <a href="tel:{{ inq.contact_phone }}" class="btn btn-sm btn-secondary" title="Call Consumer">
+                                            📞 Call
+                                        </a>
+                                        <a href="https://wa.me/91{{ inq.contact_phone }}?text=Hello%20{{ inq.consumer_name }},%20I%20received%20your%20inquiry%20for%20{{ inq.crop_name }}%20on%20FarmDirect." 
+                                           target="_blank" class="btn btn-sm btn-whatsapp" title="WhatsApp Consumer">
+                                            💬 WhatsApp
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem 0;">No inquiries received yet. When consumers show interest in your crops, their contact details will appear here.</p>
+                {% endif %}
+            </div>
+
+            <!-- What Consumers In Your Area Are Looking For -->
+            <div class="dashboard-card">
+                <h3>🎯 What Consumers Are Demanding (Sell Directly)</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Consumers actively looking to purchase crops. If you produce any of these, contact them directly!
+                </p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                    {% for dem in demands %}
+                    <div class="demand-card" style="margin-bottom: 0;">
+                        <div class="demand-header">
+                            <span class="demand-title">{{ dem.crop_name }}</span>
+                            <span class="badge badge-available">Wanted</span>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-bottom: 0.3rem;">
+                            Quantity: <strong>{{ dem.quantity }} {{ dem.unit }}</strong>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-bottom: 0.3rem;">
+                            Target Price: <strong>₹{{ dem.target_price }}/{{ dem.unit }}</strong>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+                            📍 {{ dem.location }}
+                        </div>
+                        {% if dem.notes %}
+                        <div style="font-size: 0.8rem; font-style: italic; color: #475569; margin-bottom: 0.6rem;">
+                            "{{ dem.notes }}"
+                        </div>
+                        {% endif %}
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <a href="tel:{{ dem.consumer_phone }}" class="btn btn-sm btn-secondary">📞 Call Buyer</a>
+                            <a href="https://wa.me/91{{ dem.consumer_phone }}?text=Hello%20{{ dem.consumer_name }},%20I%20am%20a%20farmer%20and%20can%20supply%20your%20demand%20for%20{{ dem.crop_name }}." 
+                               target="_blank" class="btn btn-sm btn-whatsapp">💬 WhatsApp</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

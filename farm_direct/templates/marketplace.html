@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace - Browse Crops Directly From Farmers{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
+    <!-- Page Header -->
+    <div style="margin-bottom: 2rem; text-align: center;">
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-dark);">Direct Farmer Crop Marketplace</h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem;">
+            Find fresh produce straight from fields. Zero brokers, zero extra fees.
+        </p>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="filter-card">
+        <form method="GET" action="{{ url_for('marketplace') }}" class="filter-form">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="q">Search Crop</label>
+                <input type="text" id="q" name="q" class="form-control" placeholder="e.g. Tomato, Basmati, Mango..." value="{{ search_query }}">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="category">Category</label>
+                <select id="category" name="category" class="form-control">
+                    <option value="">All Categories</option>
+                    <option value="Vegetables" {% if category == 'Vegetables' %}selected{% endif %}>Vegetables</option>
+                    <option value="Fruits" {% if category == 'Fruits' %}selected{% endif %}>Fruits</option>
+                    <option value="Grains" {% if category == 'Grains' %}selected{% endif %}>Grains & Cereals</option>
+                    <option value="Pulses" {% if category == 'Pulses' %}selected{% endif %}>Pulses & Legumes</option>
+                    <option value="Spices & Others" {% if category == 'Spices & Others' %}selected{% endif %}>Spices & Others</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="location">Location / District</label>
+                <input type="text" id="location" name="location" class="form-control" placeholder="e.g. Anand, Punjab, Mandya..." value="{{ location }}">
+            </div>
+
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary" style="height: 42px;">🔍 Search</button>
+                <a href="{{ url_for('marketplace') }}" class="btn btn-secondary" style="height: 42px;" title="Reset filters">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Count -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--text-dark);">
+            Available Crops ({{ crops|length }})
+        </h3>
+        {% if session.get('role') == 'consumer' %}
+        <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-sm btn-consumer">+ Post What Crop You Need</a>
+        {% endif %}
+    </div>
+
+    <!-- Crops Grid -->
+    {% if crops %}
+    <div class="crops-grid">
+        {% for crop in crops %}
+        <div class="crop-card">
+            <div class="crop-card-header">
+                <span class="crop-emoji">{{ crop.image_emoji }}</span>
+                <span class="crop-category-badge">{{ crop.category }}</span>
+            </div>
+            <div class="crop-card-body">
+                <h3 class="crop-card-title">{{ crop.crop_name }}</h3>
+                <div class="crop-location">📍 {{ crop.location }}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                    👨‍🌾 Farmer: <strong>{{ crop.farmer_name }}</strong>
+                </div>
+
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem; flex: 1;">
+                    {{ crop.description|truncate(80) }}
+                </p>
+
+                <div class="crop-pricing">
+                    <div>
+                        <div class="direct-price">₹{{ crop.price }} <span>/ {{ crop.unit }}</span></div>
+                        {% if crop.estimated_market_price %}
+                        <div class="market-price-strike">Retail: ₹{{ crop.estimated_market_price }}</div>
+                        {% endif %}
+                    </div>
+                    {% if crop.estimated_market_price and crop.estimated_market_price > crop.price %}
+                    <div class="savings-pill">
+                        Save ₹{{ (crop.estimated_market_price - crop.price)|round }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="crop-card-footer">
+                <a href="{{ url_for('crop_detail', crop_id=crop.id) }}" class="btn btn-primary btn-sm btn-block">
+                    View & Connect Directly
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem 1rem; background: #ffffff; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 3rem;">
+        <span style="font-size: 3rem;">🔍</span>
+        <h3 style="font-size: 1.4rem; margin: 1rem 0 0.5rem;">No crops found matching your search.</h3>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 1.5rem;">
+            Try clearing your filters or tell local farmers directly what crop and quantity you need!
+        </p>
+        <a href="{{ url_for('marketplace') }}" class="btn btn-secondary">Clear Search Filters</a>
+        <a href="{{ url_for('consumer_login') }}" class="btn btn-consumer" style="margin-left: 0.5rem;">📢 Post Your Crop Demand</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

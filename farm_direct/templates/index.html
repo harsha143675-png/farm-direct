@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}FarmDirect - Eliminating Middlemen Between Farmers & Consumers{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <h1>Direct From Farmers To Consumers</h1>
+        <p>Eliminate costly mediators and middlemen. Farmers set their own fair price, and consumers enjoy fresh, harvest-direct produce at honest rates.</p>
+        <div class="hero-actions">
+            <a href="{{ url_for('farmer_login') }}" class="btn btn-farmer" style="font-size: 1.1rem; padding: 0.85rem 1.75rem;">
+                👨‍🌾 I am a Farmer (Sell Direct)
+            </a>
+            <a href="{{ url_for('consumer_login') }}" class="btn btn-consumer" style="font-size: 1.1rem; padding: 0.85rem 1.75rem;">
+                🛒 I am a Consumer (Buy Direct)
+            </a>
+            <a href="{{ url_for('marketplace') }}" class="btn btn-secondary" style="font-size: 1.1rem; padding: 0.85rem 1.75rem;">
+                🔍 Browse All Crops
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Bar -->
+<section class="stats-bar">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>{{ stats.farmers }}</h3>
+                <p>Local Farmers</p>
+            </div>
+            <div class="stat-item">
+                <h3>{{ stats.consumers }}</h3>
+                <p>Active Consumers</p>
+            </div>
+            <div class="stat-item">
+                <h3>{{ stats.crops }}</h3>
+                <p>Fresh Crops Listed</p>
+            </div>
+            <div class="stat-item">
+                <h3>{{ stats.demands }}</h3>
+                <p>Consumer Demands</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- The Mission: Eliminate the Mediator -->
+<section class="comparison-section">
+    <div class="container">
+        <h2 class="section-title">The Real Problem & Our Direct Solution</h2>
+        <p class="section-subtitle">Traditional agricultural supply chains drain wealth from hard-working farmers and inflate consumer costs.</p>
+
+        <div class="comparison-grid">
+            <div class="comparison-card mediator">
+                <h3>❌ The Traditional Middleman Model</h3>
+                <ul class="comparison-list">
+                    <li>❌ <strong>Multiple Mediators:</strong> Agents, wholesalers, sub-wholesalers, and retailers all take hefty cuts.</li>
+                    <li>❌ <strong>Farmer Underpaid:</strong> Farmers often receive as little as 30% of what the consumer pays.</li>
+                    <li>❌ <strong>Consumer Overcharged:</strong> Final retail price inflated by 50% to 150% due to middleman markups.</li>
+                    <li>❌ <strong>Lack of Freshness:</strong> Produce sits in intermediate godowns and cold chains for days.</li>
+                    <li>❌ <strong>Zero Transparency:</strong> Neither the farmer knows who bought, nor consumer knows who grew it.</li>
+                </ul>
+            </div>
+
+            <div class="comparison-card direct">
+                <h3>✅ The FarmDirect Direct Model</h3>
+                <ul class="comparison-list">
+                    <li>✅ <strong>Zero Middlemen:</strong> 100% direct connection between grower and consumer.</li>
+                    <li>✅ <strong>100% Farmer Earnings:</strong> Farmer sets the honest price and keeps every single rupee.</li>
+                    <li>✅ <strong>Big Savings for Consumers:</strong> Pay honest farm rates without broker commissions.</li>
+                    <li>✅ <strong>Harvest-Fresh Quality:</strong> Picked fresh and delivered without intermediate storage delays.</li>
+                    <li>✅ <strong>Direct WhatsApp & Call:</strong> Direct phone/chat connection for instant coordination.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Fresh Crops -->
+<section style="padding: 2rem 0; background: #ffffff; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+                <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-dark);">Fresh Crops Available Directly From Farmers</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Contact the farmer directly via WhatsApp or Call to place your order.</p>
+            </div>
+            <a href="{{ url_for('marketplace') }}" class="btn btn-secondary btn-sm">View All Crops &rarr;</a>
+        </div>
+
+        <div class="crops-grid">
+            {% for crop in recent_crops %}
+            <div class="crop-card">
+                <div class="crop-card-header">
+                    <span class="crop-emoji">{{ crop.image_emoji }}</span>
+                    <span class="crop-category-badge">{{ crop.category }}</span>
+                </div>
+                <div class="crop-card-body">
+                    <h3 class="crop-card-title">{{ crop.crop_name }}</h3>
+                    <div class="crop-location">
+                        📍 {{ crop.location }}
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                        👨‍🌾 Farmer: <strong>{{ crop.farmer_name }}</strong>
+                    </p>
+                    
+                    <div class="crop-pricing">
+                        <div>
+                            <div class="direct-price">₹{{ crop.price }} <span>/ {{ crop.unit }}</span></div>
+                            {% if crop.estimated_market_price %}
+                            <div class="market-price-strike">Market: ₹{{ crop.estimated_market_price }}/{{ crop.unit }}</div>
+                            {% endif %}
+                        </div>
+                        {% if crop.estimated_market_price and crop.estimated_market_price > crop.price %}
+                        <div class="savings-pill">
+                            Save ₹{{ (crop.estimated_market_price - crop.price)|round }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="crop-card-footer">
+                    <a href="{{ url_for('crop_detail', crop_id=crop.id) }}" class="btn btn-primary btn-sm btn-block">
+                        View & Direct Connect
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Consumer Demands Section -->
+<section style="padding: 3rem 0;">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+                <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--text-dark);">What Consumers Are Currently Demanding</h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Farmers can view buyer requirements and supply directly.</p>
+            </div>
+            {% if session.get('role') == 'consumer' %}
+            <a href="{{ url_for('consumer_dashboard') }}" class="btn btn-consumer btn-sm">+ Post A Crop Requirement</a>
+            {% else %}
+            <a href="{{ url_for('consumer_login') }}" class="btn btn-consumer btn-sm">Post What You Need</a>
+            {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+            {% for demand in recent_demands %}
+            <div class="demand-card">
+                <div class="demand-header">
+                    <span class="demand-title">{{ demand.crop_name }}</span>
+                    <span class="badge badge-available">Wanted</span>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                    Required: <strong>{{ demand.quantity }} {{ demand.unit }}</strong> | Target Price: <strong>₹{{ demand.target_price }}/{{ demand.unit }}</strong>
+                </p>
+                <div style="font-size: 0.85rem; color: #475569;">
+                    📍 Location: {{ demand.location }}
+                </div>
+                {% if demand.notes %}
+                <p style="font-size: 0.85rem; font-style: italic; color: #64748b; margin-top: 0.5rem; background: #f8fafc; padding: 0.4rem; border-radius: 4px;">
+                    "{{ demand.notes }}"
+                </p>
+                {% endif %}
+                <div style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
+                    Requested by: {{ demand.consumer_name }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Portal Login & Register - FarmDirect{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-header farmer-auth">
+        <h2>👨‍🌾 Farmer Portal</h2>
+        <p>Direct access to list your crops, set honest prices, and connect directly with consumers.</p>
+    </div>
+
+    <div class="auth-tabs">
+        <button type="button" class="auth-tab {% if active_tab != 'register' %}active{% endif %}" data-tab="login">
+            Farmer Sign In
+        </button>
+        <button type="button" class="auth-tab {% if active_tab == 'register' %}active{% endif %}" data-tab="register">
+            New Farmer Registration
+        </button>
+    </div>
+
+    <div class="auth-body">
+        <!-- Sign In Form -->
+        <form id="login-form" method="POST" action="{{ url_for('farmer_login') }}" style="display: {% if active_tab == 'register' %}none{% else %}block{% endif %};">
+            <input type="hidden" name="action" value="login">
+
+            <div class="form-group">
+                <label for="farmer-email">Email Address</label>
+                <input type="email" id="farmer-email" name="email" class="form-control" placeholder="e.g. ramesh@farmer.com" required value="ramesh@farmer.com">
+            </div>
+
+            <div class="form-group">
+                <label for="farmer-password">Password</label>
+                <input type="password" id="farmer-password" name="password" class="form-control" placeholder="••••••••" required value="password123">
+            </div>
+
+            <button type="submit" class="btn btn-farmer btn-block" style="padding: 0.85rem; font-size: 1rem;">
+                🌾 Sign In to Farmer Dashboard
+            </button>
+
+            <div style="margin-top: 1.25rem; padding: 0.75rem; background: #ecfdf5; border-radius: 6px; font-size: 0.85rem; color: #065f46;">
+                💡 <strong>Demo Farmer Login:</strong> Email: <code>ramesh@farmer.com</code> | Password: <code>password123</code>
+            </div>
+        </form>
+
+        <!-- Registration Form -->
+        <form id="register-form" method="POST" action="{{ url_for('farmer_login') }}" style="display: {% if active_tab == 'register' %}block{% else %}none{% endif %};">
+            <input type="hidden" name="action" value="register">
+
+            <div class="form-group">
+                <label for="reg-name">Full Name *</label>
+                <input type="text" id="reg-name" name="name" class="form-control" placeholder="e.g. Ramesh Patel" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reg-phone">Phone / WhatsApp *</label>
+                    <input type="tel" id="reg-phone" name="phone" class="form-control" placeholder="e.g. 9876543210" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Email Address *</label>
+                    <input type="email" id="reg-email" name="email" class="form-control" placeholder="e.g. ramesh@gmail.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-password">Create Password *</label>
+                <input type="password" id="reg-password" name="password" class="form-control" placeholder="Minimum 6 characters" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reg-state">State *</label>
+                    <input type="text" id="reg-state" name="state" class="form-control" placeholder="e.g. Gujarat" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-district">District *</label>
+                    <input type="text" id="reg-district" name="district" class="form-control" placeholder="e.g. Anand" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-village">Village / Farm Location *</label>
+                <input type="text" id="reg-village" name="city_village" class="form-control" placeholder="e.g. Borsad Village" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-address">Farm Address / Landmark</label>
+                <input type="text" id="reg-address" name="address" class="form-control" placeholder="e.g. Near Canal Road, Survey No. 42">
+            </div>
+
+            <button type="submit" class="btn btn-farmer btn-block" style="padding: 0.85rem; font-size: 1rem;">
+                ✅ Register as Farmer (Zero Middlemen)
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

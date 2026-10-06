@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Consumer Portal Login & Register - FarmDirect{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-header consumer-auth">
+        <h2>🛒 Consumer Portal</h2>
+        <p>Connect directly with local farmers, enjoy harvest-fresh crops, and save on retail markups.</p>
+    </div>
+
+    <div class="auth-tabs">
+        <button type="button" class="auth-tab {% if active_tab != 'register' %}active{% endif %}" data-tab="login">
+            Consumer Sign In
+        </button>
+        <button type="button" class="auth-tab {% if active_tab == 'register' %}active{% endif %}" data-tab="register">
+            New Consumer Registration
+        </button>
+    </div>
+
+    <div class="auth-body">
+        <!-- Sign In Form -->
+        <form id="login-form" method="POST" action="{{ url_for('consumer_login') }}" style="display: {% if active_tab == 'register' %}none{% else %}block{% endif %};">
+            <input type="hidden" name="action" value="login">
+
+            <div class="form-group">
+                <label for="consumer-email">Email Address</label>
+                <input type="email" id="consumer-email" name="email" class="form-control" placeholder="e.g. pooja@consumer.com" required value="pooja@consumer.com">
+            </div>
+
+            <div class="form-group">
+                <label for="consumer-password">Password</label>
+                <input type="password" id="consumer-password" name="password" class="form-control" placeholder="••••••••" required value="password123">
+            </div>
+
+            <button type="submit" class="btn btn-consumer btn-block" style="padding: 0.85rem; font-size: 1rem;">
+                🛒 Sign In to Consumer Dashboard
+            </button>
+
+            <div style="margin-top: 1.25rem; padding: 0.75rem; background: #eff6ff; border-radius: 6px; font-size: 0.85rem; color: #1e40af;">
+                💡 <strong>Demo Consumer Login:</strong> Email: <code>pooja@consumer.com</code> | Password: <code>password123</code>
+            </div>
+        </form>
+
+        <!-- Registration Form -->
+        <form id="register-form" method="POST" action="{{ url_for('consumer_login') }}" style="display: {% if active_tab == 'register' %}block{% else %}none{% endif %};">
+            <input type="hidden" name="action" value="register">
+
+            <div class="form-group">
+                <label for="reg-c-name">Full Name *</label>
+                <input type="text" id="reg-c-name" name="name" class="form-control" placeholder="e.g. Pooja Sharma" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reg-c-phone">Phone / WhatsApp *</label>
+                    <input type="tel" id="reg-c-phone" name="phone" class="form-control" placeholder="e.g. 9123456780" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-c-email">Email Address *</label>
+                    <input type="email" id="reg-c-email" name="email" class="form-control" placeholder="e.g. pooja@gmail.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-c-password">Create Password *</label>
+                <input type="password" id="reg-c-password" name="password" class="form-control" placeholder="Minimum 6 characters" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reg-c-state">State *</label>
+                    <input type="text" id="reg-c-state" name="state" class="form-control" placeholder="e.g. Gujarat" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-c-city">City / District *</label>
+                    <input type="text" id="reg-c-city" name="district" class="form-control" placeholder="e.g. Ahmedabad" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-c-area">Area / Locality *</label>
+                <input type="text" id="reg-c-area" name="city_village" class="form-control" placeholder="e.g. Bodakdev" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-c-address">Delivery Address</label>
+                <input type="text" id="reg-c-address" name="address" class="form-control" placeholder="e.g. B-203 Sunrise Residency">
+            </div>
+
+            <button type="submit" class="btn btn-consumer btn-block" style="padding: 0.85rem; font-size: 1rem;">
+                ✅ Register as Consumer (Buy Fresh Direct)
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

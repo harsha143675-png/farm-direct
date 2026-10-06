@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}{{ crop.crop_name }} - Direct from Farmer {{ crop.farmer_name }} | FarmDirect{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="padding-top: 1.5rem;">
+        <a href="{{ url_for('marketplace') }}" style="text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">
+            &larr; Back to all crops
+        </a>
+    </div>
+
+    <div class="detail-layout">
+        <!-- Main Details -->
+        <div class="detail-main">
+            <div style="display: flex; align-items: flex-start; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="font-size: 4rem; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.5rem 1rem;">
+                    {{ crop.image_emoji }}
+                </div>
+                <div>
+                    <span class="crop-category-badge">{{ crop.category }}</span>
+                    <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--text-dark); margin: 0.35rem 0;">
+                        {{ crop.crop_name }}
+                    </h1>
+                    <div style="color: var(--text-muted); font-size: 0.95rem;">
+                        📍 Farm Location: <strong>{{ crop.location }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Breakdown & Mediator Elimination -->
+            <div class="transparency-box">
+                <h4>🛡️ Eliminating Middlemen: Transparent Pricing</h4>
+                <p style="font-size: 0.85rem; color: #047857; margin-bottom: 0.75rem;">
+                    You are dealing directly with the farmer. No retail middlemen, no broker commissions.
+                </p>
+
+                <div class="price-row">
+                    <span>Direct Farmer Price:</span>
+                    <span id="unit-price-val" data-price="{{ crop.price }}" style="font-weight: 700; color: var(--primary);">₹{{ crop.price }} / {{ crop.unit }}</span>
+                </div>
+
+                {% if crop.estimated_market_price %}
+                <div class="price-row">
+                    <span>Traditional Retail / Middleman Price:</span>
+                    <span id="market-price-val" data-market-price="{{ crop.estimated_market_price }}" style="color: #991b1b; text-decoration: line-through;">₹{{ crop.estimated_market_price }} / {{ crop.unit }}</span>
+                </div>
+
+                <div class="price-row">
+                    <span>Your Direct Savings:</span>
+                    <span style="color: #047857; font-weight: 700;">₹{{ savings }} / {{ crop.unit }} ({{ savings_pct }}% Saved)</span>
+                </div>
+                {% endif %}
+
+                <!-- Dynamic Calculator -->
+                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed #a7f3d0;">
+                    <label for="calc-quantity" style="font-size: 0.85rem; font-weight: 700; color: #065f46; display: block; margin-bottom: 0.4rem;">
+                        Calculate savings for your quantity (in {{ crop.unit }}):
+                    </label>
+                    <input type="number" id="calc-quantity" min="1" max="{{ crop.quantity }}" value="5" class="form-control" style="max-width: 160px; display: inline-block;">
+                    
+                    <div style="margin-top: 0.75rem; display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem;">
+                        <div>Direct Farmer Cost: <strong id="total-farmer-pay" style="color: var(--primary); font-size: 1.1rem;">₹{{ (crop.price * 5)|round }}</strong></div>
+                        {% if crop.estimated_market_price %}
+                        <div>Middleman Retail Cost: <strong id="total-market-pay" style="color: #991b1b;">₹{{ (crop.estimated_market_price * 5)|round }}</strong></div>
+                        <div>Total Saved: <strong id="total-savings-val" style="color: #047857; font-size: 1.1rem;">₹{{ (savings * 5)|round }}</strong></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crop Specifications -->
+            <div style="margin: 2rem 0;">
+                <h3 style="font-size: 1.25rem; margin-bottom: 1rem; font-weight: 700;">Crop Specifications</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="background: #f8fafc; padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Total Available Stock</span>
+                        <strong>{{ crop.quantity }} {{ crop.unit }}</strong>
+                    </div>
+                    <div style="background: #f8fafc; padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Harvest Date</span>
+                        <strong>{{ crop.harvest_date or 'Freshly harvested' }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div style="margin-top: 1.5rem;">
+                <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 700;">Farmer's Note</h3>
+                <p style="color: #334155; line-height: 1.7; font-size: 1rem;">
+                    {{ crop.description or 'No extra description provided by the farmer. Fresh produce harvested directly from farm.' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Sidebar: Direct Contact -->
+        <div class="detail-sidebar">
+            <!-- Farmer Profile Card -->
+            <div class="dashboard-card" style="margin-bottom: 0;">
+                <h3>👨‍🌾 Grower Details</h3>
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-dark);">{{ crop.farmer_name }}</div>
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">
+                        📍 {{ crop.farmer_village }}, {{ crop.farmer_district }} ({{ crop.farmer_state }})
+                    </div>
+                    {% if crop.farmer_address %}
+                    <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.25rem;">
+                        {{ crop.farmer_address }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <!-- Direct Phone Call -->
+                    <a href="tel:{{ crop.farmer_phone }}" class="btn btn-primary btn-block" style="padding: 0.85rem;">
+                        📞 Call Farmer: {{ crop.farmer_phone }}
+                    </a>
+
+                    <!-- Direct WhatsApp -->
+                    <a id="btn-direct-wa" 
+                       href="https://wa.me/91{{ crop.farmer_phone }}?text=Hello%20{{ crop.farmer_name }},%20I%20am%20interested%20in%20buying%20your%20{{ crop.crop_name }}%20directly%20on%20FarmDirect." 
+                       target="_blank" 
+                       class="btn btn-whatsapp btn-block" 
+                       data-phone="{{ crop.farmer_phone }}" 
+                       data-crop="{{ crop.crop_name }}" 
+                       data-farmer="{{ crop.farmer_name }}" 
+                       data-unit="{{ crop.unit }}"
+                       style="padding: 0.85rem;">
+                        💬 Chat on WhatsApp
+                    </a>
+                </div>
+
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; text-align: center;">
+                    🔒 100% direct connection. No intermediary fees or deductions.
+                </p>
+            </div>
+
+            <!-- Send Direct In-App Inquiry -->
+            <div class="dashboard-card">
+                <h3>📩 Send Direct Inquiry</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Leave your contact details and message for the farmer to view.
+                </p>
+
+                {% if session.get('user_id') and session.get('role') == 'consumer' %}
+                <form method="POST" action="{{ url_for('submit_inquiry', crop_id=crop.id) }}">
+                    <div class="form-group">
+                        <label for="inq_qty">Quantity Needed (in {{ crop.unit }})</label>
+                        <input type="number" step="0.5" id="inq_qty" name="quantity_needed" class="form-control" value="5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact_phone">Your Contact Phone</label>
+                        <input type="tel" id="contact_phone" name="contact_phone" class="form-control" value="{{ current_user.phone if current_user else '' }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inq_msg">Message</label>
+                        <textarea id="inq_msg" name="message" class="form-control" placeholder="e.g. Please confirm if delivery to my area is possible and total pricing."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-consumer btn-block">
+                        Send Direct Inquiry to Farmer
+                    </button>
+                </form>
+                {% elif session.get('role') == 'farmer' %}
+                <div style="padding: 1rem; background: #f8fafc; border-radius: 6px; font-size: 0.85rem; color: var(--text-muted);">
+                    You are logged in as a farmer. Consumers use this form to contact you.
+                </div>
+                {% else %}
+                <div style="padding: 1rem; background: #eff6ff; border-radius: 6px; font-size: 0.85rem; color: #1e40af; text-align: center;">
+                    <p style="margin-bottom: 0.75rem;">Please sign in as a consumer to send an inquiry or call the farmer directly using the button above.</p>
+                    <a href="{{ url_for('consumer_login') }}" class="btn btn-consumer btn-sm btn-block">Sign In as Consumer</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
